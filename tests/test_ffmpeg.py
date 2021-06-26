@@ -28,7 +28,7 @@ libswresample   3.  7.100 /  3.  7.100
 libpostproc    55.  7.100 / 55.  7.100
 """
 
-invalid_version = """
+nightly_version = """
 ffmpeg version N-56723-ga4e518c321-static https://johnvansickle.com/ffmpeg/  Copyright (c) 2000-2021 the FFmpeg developers
 built with gcc 8 (Debian 8.3.0-6)
 configuration: --enable-gpl --enable-version3 --enable-static --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio --cc=gcc --enable-fontconfig --enable-frei0r --enable-gnutls --enable-gmp --enable-libgme --enable-gray --enable-libaom --enable-libfribidi --enable-libass --enable-libvmaf --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-librubberband --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libvorbis --enable-libopus --enable-libtheora --enable-libvidstab --enable-libvo-amrwbenc --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libdav1d --enable-libxvid --enable-libzvbi --enable-libzimg
@@ -42,18 +42,35 @@ libswresample   3. 10.100 /  3. 10.100
 libpostproc    55. 10.100 / 55. 10.100
 """
 
+invalid_version = """
+ffmpeg version N-56723-ga4e518c321-static https://johnvansickle.com/ffmpeg/  Copyright (c) 1998-2001 the FFmpeg developers
+built with gcc 8 (Debian 8.3.0-6)
+configuration: --enable-gpl --enable-version3 --enable-static --disable-debug --disable-ffplay --disable-indev=sndio --disable-outdev=sndio --cc=gcc --enable-fontconfig --enable-frei0r --enable-gnutls --enable-gmp --enable-libgme --enable-gray --enable-libaom --enable-libfribidi --enable-libass --enable-libvmaf --enable-libfreetype --enable-libmp3lame --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libopenjpeg --enable-librubberband --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libvorbis --enable-libopus --enable-libtheora --enable-libvidstab --enable-libvo-amrwbenc --enable-libvpx --enable-libwebp --enable-libx264 --enable-libx265 --enable-libxml2 --enable-libdav1d --enable-libxvid --enable-libzvbi --enable-libzimg
+libavutil      56. 72.100 / 56. 72.100
+libavcodec     58.135.100 / 58.135.100
+libavformat    58. 77.100 / 58. 77.100
+libavdevice    58. 14.100 / 58. 14.100
+libavfilter     7.111.100 /  7.111.100
+libswscale      5. 10.100 /  5. 10.100
+libswresample   3. 10.100 /  3. 10.100
+libpostproc    55. 10.100 / 55. 10.100
+"""
+
+
 def test_valid_version(fake_process):
-    fake_process.register_subprocess(
-        ["ffmpeg", "-version"], stdout=valid_version
-    )
+    fake_process.register_subprocess(["ffmpeg", "-version"], stdout=valid_version)
+
+    assert ffmpeg.has_correct_version() == True
+
+
+def test_nightly_version(fake_process):
+    fake_process.register_subprocess(["ffmpeg", "-version"], stdout=nightly_version)
 
     assert ffmpeg.has_correct_version() == True
 
 
 def test_invalid_version(fake_process, capsys):
-    fake_process.register_subprocess(
-        ["ffmpeg", "-version"], stdout=invalid_version
-    )
+    fake_process.register_subprocess(["ffmpeg", "-version"], stdout=invalid_version)
 
     assert ffmpeg.has_correct_version() == False
 
@@ -62,11 +79,9 @@ def test_invalid_version(fake_process, capsys):
 
 
 def test_outdated_version(fake_process, capsys):
-    fake_process.register_subprocess(
-        ["ffmpeg", "-version"], stdout=outdated_version
-    )
+    fake_process.register_subprocess(["ffmpeg", "-version"], stdout=outdated_version)
 
     assert ffmpeg.has_correct_version() == False
 
     output, error = capsys.readouterr()
-    assert "Your FFmpeg installation is too old (1.0), please update to 4.3+\n" in error
+    assert "Your FFmpeg installation is too old (1.0), please update to 4.2+\n" in error
